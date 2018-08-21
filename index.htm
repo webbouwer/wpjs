@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en-US" class="no-js no-svg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WPJS</title>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <script>
+    //var wpurl = "https://webdesigndenhaag.net/lab/wordpress/prototype";
+    var wpurl = "http://webdesigndenhaag.net/lab/wordpress/prototype";
+
+    var posts = [];
+
+    // https://developer.wordpress.org/rest-api/reference/
+    $.ajax({
+                    url: "assets/parser.php?url="+ wpurl +"/wp-json/wp/v2/posts?per_page=100",
+                    dataType: 'json',
+                    type: 'GET', // POST
+                    beforeSend:function(xhr){
+                    },
+                    success:function(result){
+                        if( result[0] != 'No posts found' ){
+
+                            // collect data
+                            $.each( result, function(idx,obj){
+                                posts[obj.id] = obj;
+                            });
+                            markupHTML(result);
+
+                        }
+                    }
+
+    });
+
+
+    markupHTML = function(result){
+
+            var html = '';
+            $.each( result, function(idx,obj){
+                if( $('[data-id='+obj.id+']').length > 0 ){
+                    // object is on screen
+                }else{
+                    var filterclass = '';
+                    $(obj.tags).each(function( x , tag ){
+                        filterclass += ' '+tag;
+                    });
+                    $(obj.cats).each(function( x , cats ){
+                        filterclass += ' '+cats;
+                    });
+                    html += '<div id="post-'+obj.id+'" data-id="'+obj.id+'" ';
+                    html += 'class="item '+filterclass+'" ';
+                    html += 'data-tags="'+obj.tags+'" data-cats="'+obj.cats+'" data-date="'+obj.modified+'">';
+
+                    html += '<div><h3><a href="'+obj.guid.rendered+'">'+obj.title.rendered+'</a></h3><small>'+obj.author+' - '+obj.date+'</small></div>';
+                    //html += '<div>'+obj.content.rendered+'</div>';
+                    //html += JSON.stringify(obj);
+                    html += '</div>';
+                }
+            });
+            $('#container').append( html );
+            //console.log(JSON.stringify(root));
+
+        };
+
+    </script>
+</head>
+    <body>
+    <div id="container"></div>
+    </body>
+</html>
